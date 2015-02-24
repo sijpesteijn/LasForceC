@@ -11,6 +11,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef struct {
+	char *content;
+	unsigned long length;
+} socket_message;
+
 void error(const char *msg) {
 	perror(msg);
 	exit(1);
@@ -68,30 +73,30 @@ int createSocket() {
 	return listener_d;
 }
 
-
-char* readSocketMessage(int connect_d) {
+int getMessageLength(connect_d) {
 	int message_size_length = 13;
 	char message_size[message_size_length];
 	int n = read(connect_d, message_size, message_size_length-1);
 	if (n < 0)
 		error("Can't reading size from socket");
 	message_size[12] = '\0';
-	printf("Message size string: %s\n", message_size);
-	unsigned long message_length = atol(message_size);
-	if (message_length == 0) {
-		// Socket closed from the client side
-		printf("Client closed connection.\n");
-		return 0;
-	}
-	printf("Message size: %lu\n", message_length);
-//	char message[message_length+1];
-	char *message;
+	return atol(message_size);
+}
+
+
+socket_message readSocketMessage(int connect_d) {
+	unsigned long message_length = getMessageLength(connect_d);
+
+	char* message = malloc(message_length+1);
+	bzero(message,  message_length+1);
+
 	int socket_size = 2048; //32768;
 	if (socket_size > message_length) {
 		socket_size = message_length;
 	}
+
 	unsigned long bytes_read = 0;
-	int klaar = 1;
+	int klaar = 1, n = 0;
 	while(klaar && bytes_read < message_length) {
 		char buffer[socket_size];
 		n = read(connect_d, buffer, socket_size);
@@ -101,16 +106,16 @@ char* readSocketMessage(int connect_d) {
 			printf("kl");
 			klaar = 0;
 		}
-		bytes_read += n;
 		buffer[n] = '\0';
-		printf("Read %i\n", n);
-		printf("Bytes read: %lu\n", bytes_read);
-		printf("Buf: %s\n", buffer);
-//		concat(message, buffer);
+		if (bytes_read == 0) {
+			strcpy(message, buffer);
+		} else {
+			strcat(message, buffer);
+		}
+		bytes_read += n;
 	}
-	printf("Klaar\n");
-//	printf("Message: %.500s\n",message);
-	return "";
+	socket_message smsg = {message, message_length};
+	return smsg;
 }
 
 
@@ -126,8 +131,10 @@ void handleSocketsRequestMessages(int listener_d) {
 		}
 		if (!fork()) {
 			close(listener_d);
-			readSocketMessage(connect_d);
-			printf("Client socket closed");
+			socket_message smsg = readSocketMessage(connect_d);
+			printf("Content: %s\n", smsg.content);
+			printf("Length: %lu\n", smsg.length);
+			printf("Client socket closed\n\n\n");
 			close(connect_d);
 			exit(0);
 		}
