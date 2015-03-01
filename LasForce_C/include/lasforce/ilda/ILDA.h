@@ -20,10 +20,10 @@ typedef struct {
 } ILDAHeader;
 
 typedef struct {
-	char protocol[5];
+	const char* protocol;
 	int formatCode;
-	char paletteName[9];
-	char companyName[9];
+	const char* paletteName;
+	const char* companyName;
 	int totalColors;
 	int paletteNumber;
 	int scannerHead;
@@ -43,34 +43,30 @@ typedef struct {
 	int x;
 	int y;
 	int z;
-	ColorData *colorDatas;
-	int totalColorDatas;
+	ColorData *colorData;
 	int blanked;
 	int endImageData;
 } CoordinateData;
 
 typedef struct {
-	char protocol[5];
+	const char* protocol;
 	int threeD;
-	char frameName[9];
-	char companyName[9];
+	const char* frameName;
+	const char* companyName;
 	int totalPoints;
 	int frameNumber;
-	int totalFrames;
 	int scannerHead;
-	CoordinateData *coordinateDatas;
+	CoordinateData **coordinateDatas;
 	int totalCoordinateDatas;
 } CoordinateHeader;
 
 typedef struct {
 	ILDAHeader *ildaHeader;
 	ColorHeader *colorHeader;
-	ColorData *colorDatas;
+	ColorData **colorDatas;
 	int totalColorDatas;
-	CoordinateHeader *coordinateHeaders;
+	CoordinateHeader **coordinateHeaders;
 	int totalCoordinateHeaders;
 } ILDA;
-
-
 
 #endif /* INCLUDE_ILDA_H_ */
