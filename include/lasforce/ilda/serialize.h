@@ -8,9 +8,13 @@
 #ifndef INCLUDE_ILDASERIALIZE_H_
 #define INCLUDE_ILDASERIALIZE_H_
 
+#ifndef NULL
+#define NULL 0
+#endif
 #include "../../jansson/jansson.h"
+#include <errno.h>
 
-int debug = 1;
+int debug = 0;
 
 ILDAHeader *serializeIldaHeader(json_t* ildaHeaderJson) {
 	json_t* dirty = json_object_get(ildaHeaderJson, "dirty");
@@ -22,6 +26,11 @@ ILDAHeader *serializeIldaHeader(json_t* ildaHeaderJson) {
 	json_t* minHeight = json_object_get(ildaHeaderJson, "minHeight");
 	json_t* nrOfFrames = json_object_get(ildaHeaderJson, "nrOfFrames");
 	ILDAHeader *ildaHeader = malloc(sizeof(ILDAHeader));
+	if (ildaHeader == NULL) {
+		perror("Can't allocate memory for IldaHeader.");
+		strerror(errno);
+		exit(1);
+	}
 	ildaHeader->dirty = json_number_value(dirty);
 	ildaHeader->maxDepth = json_number_value(maxDepth);
 	ildaHeader->maxWidth = json_number_value(maxWidth);
@@ -54,6 +63,11 @@ ColorData *serializeColorData(json_t* colorDataJson) {
 	json_t* code = json_object_get(colorDataJson, "code");
 
 	ColorData * colorData = malloc(sizeof(ColorData));
+	if (colorData == NULL) {
+		perror("Can't allocate memory for ColorData.");
+		strerror(errno);
+		exit(1);
+	}
 	colorData->red1 = json_number_value(red1);
 	colorData->red2 = json_number_value(red2);
 	colorData->green1 = json_number_value(green1);
@@ -84,13 +98,19 @@ CoordinateData *serializeCoordinateData(json_t* coordinateDataJson) {
 	ColorData *colorData = serializeColorData(colorDataJson);
 
 	CoordinateData *coordinateData = malloc(sizeof(CoordinateData));
+	if (colorData == NULL) {
+		perror("Can't allocate memory for ColorData.");
+		strerror(errno);
+		exit(1);
+	}
+
 	coordinateData->x = json_number_value(x);
 	coordinateData->y = json_number_value(y);
 	coordinateData->z = json_number_value(z);
 	coordinateData->colorData = colorData;
 	coordinateData->blanked = json_number_value(blanked);
 	coordinateData->endImageData = json_number_value(endImageData);
-	if (0 && debug) {
+	if (debug) {
 		printf("Coordinate data:\n\tx: %i\n", coordinateData->x);
 		printf("\ty: %i\n", coordinateData->y);
 		printf("\tz: %i\n", coordinateData->z);
@@ -113,6 +133,12 @@ CoordinateHeader *serializeCoordinateHeader(json_t* coordinateHeaderJson) {
 
 	int coordinateDatasSize = json_array_size(coordinateDatasJson);
 	CoordinateData **coordinateDatas = malloc(coordinateDatasSize * sizeof(CoordinateData*));
+	if (coordinateDatas == NULL) {
+		perror("Can't allocate memory for CoordinateData pointer array.");
+		strerror(errno);
+		exit(1);
+	}
+
 	int i;
 	for (i = 0; i < coordinateDatasSize; i++) {
 		json_t* coordinateDataJson = json_array_get(coordinateDatasJson, i);
@@ -150,6 +176,12 @@ ColorHeader *serializeColorHeader(json_t* colorHeader) {
 	json_t* formatCode = json_object_get(colorHeader, "formatCode");
 	json_t* protocol = json_object_get(colorHeader, "protocol");
 	ColorHeader *header = malloc(sizeof(ColorHeader));
+	if (header == NULL) {
+		perror("Can't allocate memory for ColorHeader.");
+		strerror(errno);
+		exit(1);
+	}
+
 	header->protocol = strdup(json_string_value(protocol));
 	header->formatCode = json_number_value(formatCode);
 	header->paletteName = strdup(json_string_value(paletteName));
@@ -181,29 +213,44 @@ ILDA serialize(char* smsg, int smsgl) {
 		fprintf(stderr, "error: commit data is not an object\n");
 		json_decref(root);
 	}
+	ILDAHeader *ildaHeader = NULL;
+	ColorHeader *colorHeader = NULL;
+	ColorData **colorDatas;
+	int colorDatasSize = 0;
+	CoordinateHeader **coordinateHeaders;
+	int coordinateHeadersSize = 0;
 	json_t *ildaHeaderJson = json_object_get(root, "header");
-	ILDAHeader *ildaHeader = serializeIldaHeader(ildaHeaderJson);
+	if (ildaHeaderJson != NULL) {
+		ildaHeader = serializeIldaHeader(ildaHeaderJson);
+	}
 	json_t *colorHeaderJson = json_object_get(root, "colorHeader");
-	ColorHeader *colorHeader = serializeColorHeader(colorHeaderJson);
+	if (colorHeaderJson != NULL) {
+		colorHeader = serializeColorHeader(colorHeaderJson);
+	}
 
 	json_t *colorData = json_object_get(root, "colorDataList");
-	int colorDatasSize = json_array_size(colorData);
-	ColorData **colorDatas = malloc(colorDatasSize * sizeof(ColorData*));
-	int i;
-	for (i = 0; i < colorDatasSize; i++) {
-		json_t* colorDataJson = json_array_get(colorData, i);
-		ColorData *colorData = serializeColorData(colorDataJson);
-		colorDatas[i] = colorData;
+	if (colorData != NULL) {
+		colorDatasSize = json_array_size(colorData);
+		colorDatas = malloc(colorDatasSize * sizeof(ColorData*));
+		int i;
+		for (i = 0; i < colorDatasSize; i++) {
+			json_t* colorDataJson = json_array_get(colorData, i);
+			ColorData *colorData = serializeColorData(colorDataJson);
+			colorDatas[i] = colorData;
+		}
 	}
 
 	json_t *coordinateHeadersJson = json_object_get(root, "coordinateHeaders");
-	unsigned int coordinateHeadersSize = json_array_size(coordinateHeadersJson);
-	CoordinateHeader **coordinateHeaders = malloc(coordinateHeadersSize * sizeof(CoordinateHeader*));
-	for (i = 0; i < coordinateHeadersSize; i++) {
-		json_t* coordinateHeaderJson = json_array_get(coordinateHeadersJson, i);
-		CoordinateHeader *coordinateHeader = serializeCoordinateHeader(
-				coordinateHeaderJson);
-		coordinateHeaders[i] = coordinateHeader;
+	if (coordinateHeadersJson != NULL) {
+		coordinateHeadersSize = json_array_size(coordinateHeadersJson);
+		coordinateHeaders = malloc(coordinateHeadersSize * sizeof(CoordinateHeader*));
+		int i;
+		for (i = 0; i < coordinateHeadersSize; i++) {
+			json_t* coordinateHeaderJson = json_array_get(coordinateHeadersJson, i);
+			CoordinateHeader *coordinateHeader = serializeCoordinateHeader(
+					coordinateHeaderJson);
+			coordinateHeaders[i] = coordinateHeader;
+		}
 	}
 
 	json_decref(root);
@@ -214,15 +261,22 @@ ILDA serialize(char* smsg, int smsgl) {
 
 
 void destroyIlda(ILDA ilda) {
-	free(ilda.ildaHeader);
-	free(ilda.colorHeader);
-	for(int i = 0;i<ilda.totalColorDatas;i++) {
-		free(ilda.colorDatas[i]);
+	if (ilda.ildaHeader != NULL)
+		free(ilda.ildaHeader);
+	if (ilda.colorHeader != NULL)
+		free(ilda.colorHeader);
+	int i;
+	if (ilda.totalColorDatas > 0) {
+		for(i = 0;i<ilda.totalColorDatas;i++) {
+			free(ilda.colorDatas[i]);
+		}
+		free(ilda.colorDatas);
 	}
-	free(ilda.colorDatas);
-	for(int i = 0;i<ilda.totalCoordinateHeaders;i++) {
-		free(ilda.coordinateHeaders[i]);
+	if (ilda.totalCoordinateHeaders > 0) {
+		for(i = 0;i<ilda.totalCoordinateHeaders;i++) {
+			free(ilda.coordinateHeaders[i]);
+		}
+		free(ilda.coordinateHeaders);
 	}
-	free(ilda.coordinateHeaders);
 }
 #endif /* INCLUDE_ILDASERIALIZE_H_ */

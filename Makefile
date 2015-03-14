@@ -1,5 +1,5 @@
 LasForce: 
-	gcc -I./include/ -ljansson -o LasForce ./src/lf.c ./src/lasforce/lf_socket.c
+	gcc -I./include/ -ljansson -lpthread -o lasforce-c ./src/lf.c ./src/lasforce/lf_socket.c
 	
 clean:
-	$(RM) LasForce
+	$(RM) lasforce-c

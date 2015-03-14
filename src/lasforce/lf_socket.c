@@ -56,23 +56,26 @@ ilda_message readSocketMessage(int connect_d) {
 		return smsg;
 	}
 	char* message = malloc(message_length + 1);
+	if (message == NULL) {
+		printf("Can't allocate memory for message");
+		exit(1);
+	}
 	bzero(message, message_length + 1);
 
-	int socket_size = 2048; //32768;
+	int socket_size = 4096; //32768;
 	if (socket_size > message_length) {
 		socket_size = message_length;
 	}
 
 	unsigned long bytes_read = 0;
-	int klaar = 1, n = 0;
-	while (klaar && bytes_read < message_length) {
+	int more = 1, n = 0;
+	while (more && bytes_read < message_length) {
 		char buffer[socket_size];
 		n = read(connect_d, buffer, socket_size);
 		if (n < 0)
 			error("ERROR reading message from socket");
 		if (n == 0) {
-			printf("kl");
-			klaar = 0;
+			more = 0;
 		}
 		buffer[n] = '\0';
 		if (bytes_read == 0) {
@@ -82,7 +85,11 @@ ilda_message readSocketMessage(int connect_d) {
 		}
 		bytes_read += n;
 	}
-	ilda_message smsg = { message, message_length, klaar };
+	ilda_message smsg = { message, message_length, more };
+//	printf("Sending OK\n");
+	n = write(connect_d, "OK\n", 3);
+	if (n < 0)
+		error("ERROR sending ackownlegde message");
 	return smsg;
 }
 

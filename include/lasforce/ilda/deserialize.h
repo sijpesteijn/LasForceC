@@ -106,8 +106,8 @@ char* deserializeCoordinateHeader(CoordinateHeader *coordinateHeader, int indent
 
 	char *coordinateDataJson = getTabs(indent - 1);
 	coordinateDataJson = concat(coordinateDataJson, "\"coordinateDatas\":[\n");
-	int index = 0;
-	for(int i=0;i<coordinateHeader->totalCoordinateDatas;i++) {
+	int i = 0;
+	for(i=0;i<coordinateHeader->totalCoordinateDatas;i++) {
 		coordinateDataJson = concat(coordinateDataJson, deserializeCoordinateData(coordinateHeader->coordinateDatas[i], indent + 1));
 		if (i < coordinateHeader->totalCoordinateDatas-1) {
 			coordinateDataJson = concat(coordinateDataJson, ",");
@@ -157,7 +157,6 @@ char* deserialize(ILDA ilda) {
 	if (ilda.totalCoordinateHeaders > 0) {
 		int i;
 		for (i = 0; i < ilda.totalCoordinateHeaders; i++) {
-			CoordinateHeader *header = ilda.coordinateHeaders[i];
 			deserializeCoordinateHeader(ilda.coordinateHeaders[i], 1);
 		output = concat(output, deserializeCoordinateHeader(ilda.coordinateHeaders[i], 1));
 			if (i < ilda.totalCoordinateHeaders-1) {
