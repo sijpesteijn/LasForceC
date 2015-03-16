@@ -69,4 +69,6 @@ typedef struct {
 	int totalCoordinateHeaders;
 } ILDA;
 
+void destroyIlda(ILDA ilda);
+
 #endif /* INCLUDE_ILDA_H_ */

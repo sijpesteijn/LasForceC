@@ -14,9 +14,10 @@ typedef struct {
 	char *content;
 	unsigned long length;
 	int more;
-} ilda_message;
+} socket_message;
 
 int createSocket();
-ilda_message readSocketMessage(int connect_d);
+socket_message readSocketMessage(int connect_d);
+void writeSocketMessage(int connect_d, socket_message* smsg);
 
 #endif /* INCLUDE_LASFORCE_LF_SOCKET_H_ */

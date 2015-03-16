@@ -49,10 +49,20 @@ int getMessageLength(int connect_d) {
 	return atol(message_size);
 }
 
-ilda_message readSocketMessage(int connect_d) {
+void writeSocketMessage(int connect_d, socket_message* smsg) {
+	printf("Socket send: %s.\n", smsg->content);
+	char msg[smsg->length+1];
+	strcpy(msg, smsg->content);
+	strcat(msg, "\n");
+	int n = write(connect_d, msg, smsg->length+1);
+	if (n < 0)
+		error("ERROR sending ackownlegde message");
+}
+
+socket_message readSocketMessage(int connect_d) {
 	unsigned long message_length = getMessageLength(connect_d);
 	if (message_length == 0) {
-		ilda_message smsg = { "", 0, 0 };
+		socket_message smsg = { "", 0, 0 };
 		return smsg;
 	}
 	char* message = malloc(message_length + 1);
@@ -85,11 +95,7 @@ ilda_message readSocketMessage(int connect_d) {
 		}
 		bytes_read += n;
 	}
-	ilda_message smsg = { message, message_length, more };
-//	printf("Sending OK\n");
-	n = write(connect_d, "OK\n", 3);
-	if (n < 0)
-		error("ERROR sending ackownlegde message");
+	socket_message smsg = { message, message_length, more };
 	return smsg;
 }
 

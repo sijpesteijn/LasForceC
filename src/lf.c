@@ -10,12 +10,12 @@
 #include <pthread.h>
 #include "../include/lf.h"
 #include "../include/lasforce/ilda/ILDA.h"
-#include "../include/lasforce/ilda/serialize.h"
+#include "../include/lasforce/serialize/serialize.h"
 #include "../include/lasforce/ilda/deserialize.h"
 #include "../include/lasforce/lf_socket.h"
 
 int playing = 0;
-ilda_message* toplay;
+socket_message* toplay;
 pthread_mutex_t toplay_lock = PTHREAD_MUTEX_INITIALIZER;
 
 char* concat(char *s1, char *s2) {
@@ -40,6 +40,55 @@ void addToPlay(ILDA ilda) {
 	}
 }
 
+Command* addOkResponse() {
+	Command* command = malloc(sizeof(Command));
+	command->command = "OK";
+	command->command_length = 2;
+	return command;
+}
+
+ResponseCommands* getResponseCommands(Command* command) {
+	printf("%s\n", command->command);
+	ResponseCommands* responseCommands = malloc(sizeof(ResponseCommands));
+	responseCommands->responses_length = 0;
+	if (strcmp(command->command, "play_animation") == 0) {
+		Animation* animation = (Animation*)command->message;
+		// TODO check if animation already is available in cache
+		Command* requestData = malloc(sizeof(Command));
+		requestData->command = strdup("animation_data");
+		requestData->message = animation;
+		responseCommands->responses = malloc(2*sizeof(Command));
+		responseCommands->responses[0] = requestData;
+		responseCommands->responses[1] = addOkResponse();
+		responseCommands->responses_length = 2;
+	} else if (strcmp(command->command, "play_sequence") == 0) {
+		printf("PLAY_SEQUENCE NOT IMPLEMENTED");
+	} else if (strcmp(command->command, "animation_data") == 0) {
+		// TODO Add ilda to cache
+		//ILDA* ilda = (ILDA*)command->message;
+		responseCommands->responses = malloc(sizeof(Command));
+		responseCommands->responses[0] = addOkResponse();
+		responseCommands->responses_length = 1;
+	}
+	return responseCommands;
+}
+
+socket_message* createSocketMessage(Command* command) {
+	socket_message* message = malloc(sizeof(socket_message));
+	if (strcmp(command->command, "animation_data") == 0) {
+		Animation* animation = (Animation*)command->message;
+		json_t* animationJson = json_pack("{sssisssssi}","response","animation_data","id",animation->id,"name",animation->name,"lastUpdate",animation->last_update,
+						"frameRate",animation->frame_rate);
+		message->content = json_dumps(animationJson,0);
+		message->length = strlen(message->content);
+	} else if(strcmp(command->command, "OK") == 0) {
+		json_t* okJson = json_pack("{ss}","response","ok");
+		message->content = json_dumps(okJson, 0);
+		message->length = strlen(message->content);
+	}
+	return message;
+}
+
 void* handleMessages(void* param) {
 	printf("Message handler started.\n");
 	int listener_d = createSocket();
@@ -53,14 +102,21 @@ void* handleMessages(void* param) {
 			error("Can't open secondary socket");
 		}
 		int index = 0;
-		ilda_message message;
+		socket_message message;
 		do {
 			message = readSocketMessage(connect_d);
 			if(message.length > 0) {
 				printf("Serializing...%i\n", index++);
-				ILDA ilda = serialize(message.content, message.length);
-				addToPlay(ilda);
-				printf("Content: %s\n", message.content);
+				Command* command = serialize(message.content, message.length);
+
+				ResponseCommands* responseCommands = getResponseCommands(command);
+				for(int i=0;i<responseCommands->responses_length;i++) {
+					printf("Response commands: %i\n", i);
+					socket_message* message = createSocketMessage(responseCommands->responses[i]);
+					writeSocketMessage(connect_d, message);
+				}
+
+//				addToPlay(ilda);
 //				destroyIlda(ilda);
 			}
 //			sleep(1);
@@ -75,7 +131,7 @@ void* handleMessages(void* param) {
 void* ildaPlayer(void* param) {
 	printf("ILDA Player started.\n");
 	while(1) {
-		sleep(1);
+		sleep(3);
 		printf("Checking table\n");
 	}
 	return NULL;

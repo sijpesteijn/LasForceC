@@ -1,20 +1,14 @@
 /*
- * ILDASerialize.h
+ * serializeILDA.c
  *
- *  Created on: Feb 24, 2015
+ *  Created on: Mar 16, 2015
  *      Author: gijs
  */
 
-#ifndef INCLUDE_ILDASERIALIZE_H_
-#define INCLUDE_ILDASERIALIZE_H_
-
-#ifndef NULL
-#define NULL 0
-#endif
-#include "../../jansson/jansson.h"
+#include "../../../include/lf.h"
+#include "../../../include/lasforce/serialize/serializeCommands.h"
+#include "../../../include/lasforce/ilda/ILDA.h"
 #include <errno.h>
-
-int debug = 0;
 
 ILDAHeader *serializeIldaHeader(json_t* ildaHeaderJson) {
 	json_t* dirty = json_object_get(ildaHeaderJson, "dirty");
@@ -40,16 +34,16 @@ ILDAHeader *serializeIldaHeader(json_t* ildaHeaderJson) {
 	ildaHeader->minHeight = json_number_value(minHeight);
 	ildaHeader->nrOfFrames = json_number_value(nrOfFrames);
 
-	if(debug) {
-		printf("ILDA Header:\n\tDirty: %i\n", ildaHeader->dirty);
-		printf("\tMax Depth: %i\n", ildaHeader->maxDepth);
-		printf("\tMax Width: %i\n", ildaHeader->maxWidth);
-		printf("\tMax Height: %i\n", ildaHeader->maxHeight);
-		printf("\tMin Depth: %i\n", ildaHeader->minDepth);
-		printf("\tMin Width: %i\n", ildaHeader->minWidth);
-		printf("\tMin Height: %i\n", ildaHeader->minHeight);
-		printf("\tNr of frames: %i\n", ildaHeader->nrOfFrames);
-	}
+//	if(debug) {
+//		printf("ILDA Header:\n\tDirty: %i\n", ildaHeader->dirty);
+//		printf("\tMax Depth: %i\n", ildaHeader->maxDepth);
+//		printf("\tMax Width: %i\n", ildaHeader->maxWidth);
+//		printf("\tMax Height: %i\n", ildaHeader->maxHeight);
+//		printf("\tMin Depth: %i\n", ildaHeader->minDepth);
+//		printf("\tMin Width: %i\n", ildaHeader->minWidth);
+//		printf("\tMin Height: %i\n", ildaHeader->minHeight);
+//		printf("\tNr of frames: %i\n", ildaHeader->nrOfFrames);
+//	}
 	return ildaHeader;
 }
 
@@ -75,15 +69,15 @@ ColorData *serializeColorData(json_t* colorDataJson) {
 	colorData->blue1 = json_number_value(blue1);
 	colorData->blue2 = json_number_value(blue2);
 	colorData->code = json_number_value(code);
-	if (debug) {
-		printf("Color Data\n\tRed1: %i\n", colorData->red1);
-		printf("\tRed2: %i\n", colorData->red2);
-		printf("\tGreen1: %i\n", colorData->green1);
-		printf("\tGreen2: %i\n", colorData->green2);
-		printf("\tBlue1: %i\n", colorData->blue1);
-		printf("\tBlue2: %i\n", colorData->blue2);
-		printf("\tCode: %i\n", colorData->code);
-	}
+//	if (debug) {
+//		printf("Color Data\n\tRed1: %i\n", colorData->red1);
+//		printf("\tRed2: %i\n", colorData->red2);
+//		printf("\tGreen1: %i\n", colorData->green1);
+//		printf("\tGreen2: %i\n", colorData->green2);
+//		printf("\tBlue1: %i\n", colorData->blue1);
+//		printf("\tBlue2: %i\n", colorData->blue2);
+//		printf("\tCode: %i\n", colorData->code);
+//	}
 	return colorData;
 }
 
@@ -110,13 +104,13 @@ CoordinateData *serializeCoordinateData(json_t* coordinateDataJson) {
 	coordinateData->colorData = colorData;
 	coordinateData->blanked = json_number_value(blanked);
 	coordinateData->endImageData = json_number_value(endImageData);
-	if (debug) {
-		printf("Coordinate data:\n\tx: %i\n", coordinateData->x);
-		printf("\ty: %i\n", coordinateData->y);
-		printf("\tz: %i\n", coordinateData->z);
-		printf("\tblanked: %i\n", coordinateData->blanked);
-		printf("\tend image data: %i\n", coordinateData->endImageData);
-	}
+//	if (debug) {
+//		printf("Coordinate data:\n\tx: %i\n", coordinateData->x);
+//		printf("\ty: %i\n", coordinateData->y);
+//		printf("\tz: %i\n", coordinateData->z);
+//		printf("\tblanked: %i\n", coordinateData->blanked);
+//		printf("\tend image data: %i\n", coordinateData->endImageData);
+//	}
 	return coordinateData;
 }
 
@@ -155,15 +149,15 @@ CoordinateHeader *serializeCoordinateHeader(json_t* coordinateHeaderJson) {
 	coordinateHeader->scannerHead = json_number_value(scannerHead);
 	coordinateHeader->coordinateDatas = coordinateDatas;
 	coordinateHeader->totalCoordinateDatas = coordinateDatasSize;
-	if(debug) {
-		printf("Coordinate Header:\n\tProtocol: %s\n", coordinateHeader->protocol);
-		printf("\tThreeD: %i\n", coordinateHeader->threeD);
-		printf("\tFrame name: %s\n", coordinateHeader->frameName);
-		printf("\tCompany name: %s\n", coordinateHeader->companyName);
-		printf("\tTotal points: %i\n", coordinateHeader->totalPoints);
-		printf("\tFrame nr: %i\n", coordinateHeader->frameNumber);
-		printf("\tScanner head: %i\n", coordinateHeader->scannerHead);
-	}
+//	if(debug) {
+//		printf("Coordinate Header:\n\tProtocol: %s\n", coordinateHeader->protocol);
+//		printf("\tThreeD: %i\n", coordinateHeader->threeD);
+//		printf("\tFrame name: %s\n", coordinateHeader->frameName);
+//		printf("\tCompany name: %s\n", coordinateHeader->companyName);
+//		printf("\tTotal points: %i\n", coordinateHeader->totalPoints);
+//		printf("\tFrame nr: %i\n", coordinateHeader->frameNumber);
+//		printf("\tScanner head: %i\n", coordinateHeader->scannerHead);
+//	}
 	return coordinateHeader;
 }
 
@@ -189,30 +183,19 @@ ColorHeader *serializeColorHeader(json_t* colorHeader) {
 	header->totalColors = json_number_value(totalColors);
 	header->paletteNumber = json_number_value(paletteNumber);
 	header->scannerHead = json_number_value(scannerHead);
-	if (debug) {
-		printf("Color header:\n\tscanner head: %i\n", header->scannerHead);
-		printf("\tPalette nr: %i\n", header->paletteNumber);
-		printf("\tTotal colors: %i\n", header->totalColors);
-		printf("\tCompany name: %s\n", header->companyName);
-		printf("\tPalette name: %s\n", header->paletteName);
-		printf("\tFormat code: %i\n", header->formatCode);
-		printf("\tProtocol: %s\n", header->protocol);
-	}
+//	if (debug) {
+//		printf("Color header:\n\tscanner head: %i\n", header->scannerHead);
+//		printf("\tPalette nr: %i\n", header->paletteNumber);
+//		printf("\tTotal colors: %i\n", header->totalColors);
+//		printf("\tCompany name: %s\n", header->companyName);
+//		printf("\tPalette name: %s\n", header->paletteName);
+//		printf("\tFormat code: %i\n", header->formatCode);
+//		printf("\tProtocol: %s\n", header->protocol);
+//	}
 	return header;
 }
 
-ILDA serialize(char* smsg, int smsgl) {
-	json_t* root;
-	json_error_t error;
-
-	root = json_loadb(smsg, smsgl, 0, &error);
-	if (!root) {
-		fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
-	}
-	if (!json_is_object(root)) {
-		fprintf(stderr, "error: commit data is not an object\n");
-		json_decref(root);
-	}
+ILDA* serializeILDA(json_t* root) {
 	ILDAHeader *ildaHeader = NULL;
 	ColorHeader *colorHeader = NULL;
 	ColorData **colorDatas;
@@ -253,30 +236,14 @@ ILDA serialize(char* smsg, int smsgl) {
 		}
 	}
 
-	json_decref(root);
-	ILDA ilda = { ildaHeader, colorHeader, colorDatas, colorDatasSize,
-			coordinateHeaders, coordinateHeadersSize };
+	ILDA* ilda = malloc(sizeof(ILDA));
+	ilda->ildaHeader = ildaHeader;
+	ilda->colorHeader = colorHeader;
+	ilda->colorDatas = colorDatas;
+	ilda->totalColorDatas = colorDatasSize;
+	ilda->coordinateHeaders = coordinateHeaders;
+	ilda->totalCoordinateHeaders = coordinateHeadersSize;
+
 	return ilda;
 }
 
-
-void destroyIlda(ILDA ilda) {
-	if (ilda.ildaHeader != NULL)
-		free(ilda.ildaHeader);
-	if (ilda.colorHeader != NULL)
-		free(ilda.colorHeader);
-	int i;
-	if (ilda.totalColorDatas > 0) {
-		for(i = 0;i<ilda.totalColorDatas;i++) {
-			free(ilda.colorDatas[i]);
-		}
-		free(ilda.colorDatas);
-	}
-	if (ilda.totalCoordinateHeaders > 0) {
-		for(i = 0;i<ilda.totalCoordinateHeaders;i++) {
-			free(ilda.coordinateHeaders[i]);
-		}
-		free(ilda.coordinateHeaders);
-	}
-}
-#endif /* INCLUDE_ILDASERIALIZE_H_ */
