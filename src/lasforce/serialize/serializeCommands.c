@@ -9,48 +9,91 @@
 #include <errno.h>
 
 Animation* serializeAnimation(json_t* root) {
-	json_t *animationInfo = json_object_get(root,"animationInfo");
-	if (animationInfo == NULL) {
-		printf("Need animationInfo to play animation.\n");
-	}
-	json_t *id = json_object_get(animationInfo, "id");
-	json_t *name = json_object_get(animationInfo, "name");
-	json_t *last_update = json_object_get(animationInfo, "lastUpdate");
-	json_t *frame_rate = json_object_get(animationInfo, "framerate");
+	gol("Serializing animation.",1);
 	Animation* animation = malloc(sizeof(Animation));
 	if (animation == NULL) {
-		perror("Can't allocate memory for Annimation.");
+		perror("Can't allocate memory for Animation.");
 		strerror(errno);
 		exit(1);
 	}
-	animation->id = json_number_value(id);
-	animation->name = strdup(json_string_value(name));
-	animation->last_update = strdup(json_string_value(last_update));
-	animation->frame_rate = json_number_value(frame_rate);
+	animation->id = getInt(root, "id");
+	animation->name = getString(root, "name");
+	animation->last_update = getString(root, "lastUpdate");
+	animation->frame_rate = getInt(root, "frameRate");
+	gol("Serialized animation.",1);
 	return animation;
 }
 
-Sequence* serializeSequence(json_t* root) {
+AnimationRequest* serializeAnimationRequest(json_t* root) {
+	gol("Serializing animation request.",1);
+	json_t *animationInfo = json_object_get(root,"animationInfo");
+	if (animationInfo == NULL) {
+		gol("Need animationInfo to process AnimationRequest.",1);
+	}
+	AnimationRequest* animation_request = malloc(sizeof(AnimationRequest));
+	if (animation_request == NULL) {
+		perror("Can't allocate memory for AnimationRequest.");
+		strerror(errno);
+		exit(1);
+	}
+	animation_request->animation = serializeAnimation(animationInfo);
+	gol("animation set.",1);
+	gol("Serialized animation request.",1);
+	return animation_request;
+}
+
+AnimationData* serializeAnimationDataRequest(json_t* root) {
+	gol("Serializing animation data request.",1);
+	json_t *animationDataRequest = json_object_get(root, "animationMetaData");
+	if (animationDataRequest == NULL) {
+		gol("Need animationData to process AnimationDataRequest.",1);
+	}
+	AnimationData* animation_data_request = malloc(sizeof(AnimationData));
+	if (animation_data_request == NULL) {
+		perror("Can't allocate memory for AnimationDataRequest.");
+		strerror(errno);
+		exit(1);
+	}
+	animation_data_request->animation = serializeAnimation(animationDataRequest);
+	gol("animation set.",1);
+	animation_data_request->ilda = serializeILDA(animationDataRequest);
+	gol("ilda set.",1);
+	gol("Serialized animation data request.",1);
+	return animation_data_request;
+}
+
+SequenceRequest* serializeSequenceRequest(json_t* root) {
+	gol("Serializing sequence request.",1);
 	json_t *sequenceInfo = json_object_get(root, "sequenceInfo");
 	if (sequenceInfo == NULL) {
-		printf("Need sequenceInfo to play sequence");
+		gol("Need sequenceInfo to process SequenceRequest.",1);
 	}
-	Sequence* sequence = malloc(sizeof(Sequence));
-	json_t *name = json_object_get(sequenceInfo, "name");
-	sequence->name = strdup(json_string_value(name));
+	SequenceRequest* sequence_request = malloc(sizeof(SequenceRequest));
+	if (sequence_request == NULL) {
+		perror("Can't allocate memory for SequenceRequest.");
+		strerror(errno);
+		exit(1);
+	}
+	sequence_request->name = getString(sequenceInfo, "name");
 	json_t *animationList = json_object_get(root, "animations");
 	if (animationList != NULL) {
 		int animationsSize = json_array_size(animationList);
-		Animation** animations = malloc(animationsSize * sizeof(Animation*));
+		AnimationRequest** animation_requests = malloc(animationsSize * sizeof(AnimationRequest*));
+		if (animation_requests == NULL) {
+			perror("Can't allocate memory for SequenceRequest AnimationRequests.");
+			strerror(errno);
+			exit(1);
+		}
 		int i;
 		for (i = 0; i < animationsSize; i++) {
 			json_t* animationJson = json_array_get(animationList, i);
-			Animation *animation = serializeAnimation(animationJson);
-			animations[i] = animation;
+			AnimationRequest *animation_request = serializeAnimationRequest(animationJson);
+			animation_requests[i] = animation_request;
 		}
-		sequence->animations = animations;
+		sequence_request->animation_requests = animation_requests;
+		sequence_request->animation_requests_length = animationsSize;
 	}
-	return sequence;
+	return sequence_request;
 }
 
 

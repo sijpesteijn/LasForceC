@@ -17,7 +17,7 @@ typedef struct {
 } socket_message;
 
 int createSocket();
-socket_message readSocketMessage(int connect_d);
+socket_message* readSocketMessage(int connect_d);
 void writeSocketMessage(int connect_d, socket_message* smsg);
 
 #endif /* INCLUDE_LASFORCE_LF_SOCKET_H_ */

@@ -18,5 +18,6 @@
 
 char* concat(char *s1, char *s2);
 void error(const char *msg);
+void gol(const char *msg, int level);
 
 #endif /* INCLUDE_LASFORCE_H_ */

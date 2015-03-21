@@ -67,6 +67,7 @@ typedef struct {
 	int totalColorDatas;
 	CoordinateHeader **coordinateHeaders;
 	int totalCoordinateHeaders;
+	int id;
 } ILDA;
 
 void destroyIlda(ILDA ilda);

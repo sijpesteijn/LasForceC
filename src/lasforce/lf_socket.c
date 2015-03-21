@@ -59,10 +59,14 @@ void writeSocketMessage(int connect_d, socket_message* smsg) {
 		error("ERROR sending ackownlegde message");
 }
 
-socket_message readSocketMessage(int connect_d) {
+socket_message* readSocketMessage(int connect_d) {
 	unsigned long message_length = getMessageLength(connect_d);
+	socket_message* smsg;
 	if (message_length == 0) {
-		socket_message smsg = { "", 0, 0 };
+		 smsg = malloc(sizeof(socket_message));
+		smsg->content = "";
+		smsg->length = 0;
+		smsg->more = 0;
 		return smsg;
 	}
 	char* message = malloc(message_length + 1);
@@ -95,7 +99,10 @@ socket_message readSocketMessage(int connect_d) {
 		}
 		bytes_read += n;
 	}
-	socket_message smsg = { message, message_length, more };
+	smsg = malloc(sizeof(socket_message));
+	smsg->content = message;
+	smsg->length = message_length;
+	smsg->more = more;
 	return smsg;
 }
 

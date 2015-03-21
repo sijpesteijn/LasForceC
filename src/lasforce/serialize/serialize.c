@@ -27,18 +27,23 @@ Command* getCommand(json_t* root) {
 	}
 
 	command->command = strdup(json_string_value(commandJson));
-	printf("Cmd: %s.\n", command->command);
+	command->next = NULL;
 	if (strcmp(command->command, "play_animation") == 0) {
-		command->message = serializeAnimation(root);
+		gol("getCommand: Play animation request.",1);
+		command->message = serializeAnimationRequest(root);
 	} else if (strcmp(command->command, "play_sequence") == 0) {
-		command->message = serializeSequence(root);
-	} else if (strcmp(command->command, "animation_date") == 0) {
-		command->message = serializeILDA(root);
+		gol("getCommand: Play sequence request.",1);
+		command->message = serializeSequenceRequest(root);
+	} else if (strcmp(command->command, "animation_data") == 0) {
+		gol("getCommand: Animation data request.",1);
+		command->message = serializeAnimationDataRequest(root);
 	}
+	gol("getCommand: finished.",1);
 	return command;
 }
 
 Command* serialize(char* smsg, int smsgl) {
+	gol("serialize: start.",1);
 	json_t* root;
 	json_error_t error;
 
@@ -50,8 +55,9 @@ Command* serialize(char* smsg, int smsgl) {
 		fprintf(stderr, "error: commit data is not an object\n");
 		json_decref(root);
 	}
-	Command* command = getCommand(root);
-	json_decref(root);
+	Command *command;
+	command = getCommand(root);
+	gol("serialize: finished.",1);
 	return command;
 }
 

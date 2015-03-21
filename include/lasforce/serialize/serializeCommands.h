@@ -11,9 +11,13 @@
 #include "../../lf.h"
 #include "../../jansson/jansson.h"
 #include "../commands.h"
+#include "../json/json.h"
 
-Animation* serializeAnimation(json_t* root);
-Sequence* serializeSequence(json_t* root);
+//Animation* serializeAnimation(json_t* root);
+//Sequence* serializeSequence(json_t* root);
+AnimationRequest* serializeAnimationRequest(json_t* root);
+AnimationData* serializeAnimationDataRequest(json_t* root);
+SequenceRequest* serializeSequenceRequest(json_t* root);
 
 
 #endif /* INCLUDE_LASFORCE_SERIALIZE_SERIALIZECOMMANDS_H_ */
