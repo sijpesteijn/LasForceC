@@ -22,6 +22,7 @@ typedef struct {
 	char* name;
 	char* last_update;
 	int frame_rate;
+	int loop_count;
 } Animation;
 
 typedef struct {
@@ -30,8 +31,8 @@ typedef struct {
 
 typedef struct {
 	char* name;
-	AnimationRequest** animation_requests;
-	int animation_requests_length;
+	Animation** animations;
+	int animation_length;
 } SequenceRequest;
 
 typedef struct {
@@ -39,11 +40,11 @@ typedef struct {
 	ILDA* ilda;
 } AnimationData;
 
-typedef struct {
-	char* name;
-	Animation** animations;
-	int animations_length;
-} Sequence;
+//typedef struct {
+//	char* name;
+//	Animation** animations;
+//	int animations_length;
+//} Sequence;
 
 typedef struct Queue {
 	int loop;

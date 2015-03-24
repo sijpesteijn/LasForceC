@@ -50,7 +50,7 @@ int getMessageLength(int connect_d) {
 }
 
 void writeSocketMessage(int connect_d, socket_message* smsg) {
-	printf("Socket send: %s.\n", smsg->content);
+	syslog(LOG_DEBUG, "Socket send: %s.\n", smsg->content);
 	char msg[smsg->length+1];
 	strcpy(msg, smsg->content);
 	strcat(msg, "\n");

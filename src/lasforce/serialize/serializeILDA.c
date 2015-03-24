@@ -133,7 +133,6 @@ ILDA* serializeILDA(json_t* root) {
 	int coordinateHeadersSize = 0;
 	json_t *idJson = json_object_get(root,"id");
 	int id = json_number_value(idJson);
-//	printf("ILDA ID: %i\n", id);
 	json_t *ildaHeaderJson = json_object_get(root, "header");
 	if (ildaHeaderJson != NULL) {
 		ildaHeader = serializeIldaHeader(ildaHeaderJson);

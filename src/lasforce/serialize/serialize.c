@@ -29,21 +29,21 @@ Command* getCommand(json_t* root) {
 	command->command = strdup(json_string_value(commandJson));
 	command->next = NULL;
 	if (strcmp(command->command, "play_animation") == 0) {
-		gol("getCommand: Play animation request.",1);
+		syslog(LOG_DEBUG, "%s", "getCommand: Play animation request.");
 		command->message = serializeAnimationRequest(root);
 	} else if (strcmp(command->command, "play_sequence") == 0) {
-		gol("getCommand: Play sequence request.",1);
+		syslog(LOG_DEBUG, "%s", "getCommand: Play sequence request.");
 		command->message = serializeSequenceRequest(root);
 	} else if (strcmp(command->command, "animation_data") == 0) {
-		gol("getCommand: Animation data request.",1);
+		syslog(LOG_DEBUG, "%s", "getCommand: Animation data request.");
 		command->message = serializeAnimationDataRequest(root);
 	}
-	gol("getCommand: finished.",1);
+	syslog(LOG_DEBUG, "%s", "getCommand: finished.");
 	return command;
 }
 
 Command* serialize(char* smsg, int smsgl) {
-	gol("serialize: start.",1);
+	syslog(LOG_DEBUG, "%s", "serialize: start.");
 	json_t* root;
 	json_error_t error;
 
@@ -57,7 +57,7 @@ Command* serialize(char* smsg, int smsgl) {
 	}
 	Command *command;
 	command = getCommand(root);
-	gol("serialize: finished.",1);
+	syslog(LOG_DEBUG, "%s", "serialize: finished.");
 	return command;
 }
 
